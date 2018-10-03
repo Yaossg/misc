@@ -347,46 +347,115 @@ struct replace<Src, Dst, std::tuple<Src, Tail...>>
     
 template<typename Src, typename Dst, typename Body, typename... Tail>
 struct replace<Src, Dst, std::tuple<Body, Tail...>> 
-  : replace<Src, Dst, std::tuple<Tail...>> {};
+  : push_front<Body, 
+    typename replace<Src, Dst, std::tuple<Tail...>>::type> {};
     
 template<typename Src, typename Dst>
 struct replace<Src, Dst, std::tuple<>> 
   : typer<std::tuple<>> {};
 
+template<typename Src, typename Dst, typename Tuple>
+using replace_t = typename replace<Src, Dst, Tuple>::type;
+
+template<template<typename Type> class Pred, typename Dst, typename Tuple>
 struct replace_if {};
+
+template<template<typename Type> class Pred, typename Dst, typename Body, typename... Tail>
+struct replace_if<Pred, Dst, std::tuple<Body, Tail...>> 
+  : push_front<lazy_conditional_t<Pred<Body>::value, typer<Dst>, typer<Body>>, 
+    typename replace_if<Pred, Dst, std::tuple<Tail...>>::type> {};
+	    
+template<template<typename Type> class Pred, typename Dst>
+struct replace_if<Pred, Dst, std::tuple<>> 
+  : typer<std::tuple<>> {};
+
+template<template<typename Type> class Pred, typename Dst, typename Tuple>
+using replace_if_t = typename replace_if<Pred, Dst, Tuple>::type;
+
 struct process {};
 struct process_if {};
 
-//*未完成* *[已完成]*
-//*<未完成>* 
-//[replace] replace_if
-//process process_if
-//<subreplace> <subreplace_if>
-//<subprocess> <subprocess_if>
-//[transform] <flat> <subtuple>
+template<typename Head, typename Body, typename... Tail>
+struct connect {};
 
+template<typename... Head, typename Body, typename... Tail>
+struct connect<std::tuple<Head...>, Body, Tail...>
+  : connect<std::tuple<Head...>, typename connect<Body, Tail...>::type> {};
+
+template<typename... Head, typename... Tail>
+struct connect<std::tuple<Head...>, std::tuple<Tail...>>
+  : typer<std::tuple<Head..., Tail...>> {};
+
+template<typename Head, typename Body, typename... Tail>
+using connect_t = typename connect<Head, Body, Tail...>::type;
+
+template<typename Tuple>
+struct flat {};
+
+template<typename Head, typename... Tail>
+struct flat<std::tuple<Head, Tail...>>
+  : push_front<Head, typename flat<std::tuple<Tail...>>::type> {};
+
+template<typename Head, typename... Body, typename... Tail>
+struct flat<std::tuple<std::tuple<Head, Body...>, Tail...>>
+  : connect<std::tuple<Head, Body...>, typename flat<std::tuple<Tail...>>::type> {};
+
+template<typename... Tail>
+struct flat<std::tuple<std::tuple<>, Tail...>>
+  : flat<std::tuple<Tail...>> {};
+  
+template<>
+struct flat<std::tuple<>>
+  : typer<std::tuple<>> {};
+
+template<typename Tuple>
+using flat_t = typename flat<Tuple>::type;
+
+template<typename Tuple>
+struct deep_flat {};
+
+template<typename Head, typename... Tail>
+struct deep_flat<std::tuple<Head, Tail...>>
+  : push_front<Head, typename deep_flat<std::tuple<Tail...>>::type> {};
+  
+template<typename Head, typename... Body, typename... Tail>
+struct deep_flat<std::tuple<std::tuple<Head, Body...>, Tail...>>
+  : connect<typename deep_flat<std::tuple<Head, Body...>>::type, typename deep_flat<std::tuple<Tail...>>::type> {};
+
+template<typename... Tail>
+struct deep_flat<std::tuple<std::tuple<>, Tail...>>
+  : flat<std::tuple<Tail...>> {};
+  
+template<>
+struct deep_flat<std::tuple<>>
+  : typer<std::tuple<>> {};
+  
+template<typename Tuple>
+using deep_flat_t = typename deep_flat<Tuple>::type;
+
+//计划: 
+//process process_if
 
 using T = std::tuple<int,wchar_t,double,wchar_t,int,
 	float,wchar_t,char,int,char,wchar_t,int,wchar_t,
 	double,wchar_t,int,float,wchar_t,char,int,char,wchar_t>;
-static_assert( std::is_same<unique_t<T>, std::tuple<int, wchar_t, double, float, char>>::value , ""); 
+static_assert( std::is_same<unique_t<T>, std::tuple<int, wchar_t, double, float, char>>::value); 
 
-using T2 = std::tuple<double, T, unsigned long, float>;
-static_assert( find_if_v<std::is_integral, T2> == 2, "");
+using T2 = std::tuple<int*, unsigned long, float>;
+using T20 = std::tuple<double, unsigned long, float>;
+static_assert( std::is_same<replace_if_t<std::is_pointer, double, T2>, T20>::value );
 
 using T3 = std::tuple<double, unsigned long, float>;
 using T4 = std::tuple<double*, unsigned long*, float*>;
 static_assert( std::is_same<transform_t<std::add_pointer, T3>, T4>::value, "");
 
-using Tarray = std::array<double, 4>;
-using Ttuple = std::tuple<int, int, int, int>;
-static_assert( std::is_same<Ttuple, typename replace<double, int, to_tuple_t<Tarray>>::type >::value, "");
-static_assert( all_of_if_v<std::is_integral, Ttuple>, "");
+using table = std::tuple<std::tuple<int, std::tuple<int>>, int, std::tuple<>, int, std::tuple<int>, std::tuple<>>;
+static_assert( all_of_v<int, deep_flat_t<table>> );
 
 using Ttyper = int; 
 using Tint = repeat_t<3, box, Ttyper>;
 using Tint2 = repeat_t<3, unbox, Tint>;
-static_assert( std::is_same<Tint2, int>::value, "");
+static_assert( std::is_same<Tint2, int>::value);
 
 }
 
