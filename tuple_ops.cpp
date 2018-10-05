@@ -372,8 +372,40 @@ struct replace_if<Pred, Dst, std::tuple<>>
 template<template<typename Type> class Pred, typename Dst, typename Tuple>
 using replace_if_t = typename replace_if<Pred, Dst, Tuple>::type;
 
+template<typename Src, template<typename Type> class Func, typename Tuple>
 struct process {};
+
+template<typename Src, template<typename Type> class Func, typename... Tail>
+struct process<Src, Func, std::tuple<Src, Tail...>> 
+  : push_front<typename Func<Src>::type, 
+    typename process<Src, Func, std::tuple<Tail...>>::type> {};
+    
+template<typename Src, template<typename Type> class Func, typename Body, typename... Tail>
+struct process<Src, Func, std::tuple<Body, Tail...>> 
+  : push_front<Body, 
+    typename process<Src, Func, std::tuple<Tail...>>::type> {};
+    
+template<typename Src, template<typename Type> class Func>
+struct process<Src, Func, std::tuple<>> 
+  : typer<std::tuple<>> {};
+
+template<typename Src, template<typename Type> class Func, typename Tuple>
+using process_t = typename process<Src, Func, Tuple>::type;
+
+template<template<typename Type> class Pred, template<typename Type> class Func, typename Tuple>
 struct process_if {};
+    
+template<template<typename Type> class Pred, template<typename Type> class Func, typename Body, typename... Tail>
+struct process_if<Pred, Func, std::tuple<Body, Tail...>> 
+  : push_front<lazy_conditional_t<Pred<Body>::value, Func<Body>, typer<Body>>, 
+    typename process_if<Pred, Func, std::tuple<Tail...>>::type> {};
+  
+template<template<typename Type> class Pred, template<typename Type> class Func>
+struct process_if<Pred, Func, std::tuple<>> 
+  : typer<std::tuple<>> {};
+  
+template<template<typename Type> class Pred, template<typename Type> class Func, typename Tuple>
+using process_if_t = typename process_if<Pred, Func, Tuple>::type;
 
 template<typename Head, typename Body, typename... Tail>
 struct connect {};
@@ -433,21 +465,18 @@ struct deep_flat<std::tuple<>>
 template<typename Tuple>
 using deep_flat_t = typename deep_flat<Tuple>::type;
 
-//¼Æ»®: 
-//process process_if
-
 using T = std::tuple<int,wchar_t,double,wchar_t,int,
 	float,wchar_t,char,int,char,wchar_t,int,wchar_t,
 	double,wchar_t,int,float,wchar_t,char,int,char,wchar_t>;
 static_assert( std::is_same<unique_t<T>, std::tuple<int, wchar_t, double, float, char>>::value); 
 
-using T2 = std::tuple<int*, unsigned long, float>;
-using T20 = std::tuple<double, unsigned long, float>;
-static_assert( std::is_same<replace_if_t<std::is_pointer, double, T2>, T20>::value );
+using T2 = std::tuple<int, unsigned long, float>;
+using T20 = std::tuple<int*, unsigned long*, float>;
+static_assert( std::is_same<typename process_if<std::is_integral, std::add_pointer, T2>::type, T20>::value );
 
 using T3 = std::tuple<double, unsigned long, float>;
 using T4 = std::tuple<double*, unsigned long*, float*>;
-static_assert( std::is_same<transform_t<std::add_pointer, T3>, T4>::value, "");
+static_assert( std::is_same<transform_t<std::add_pointer, T3>, T4>::value );
 
 using table = std::tuple<std::tuple<int, std::tuple<int>>, int, std::tuple<>, int, std::tuple<int>, std::tuple<>>;
 static_assert( all_of_v<int, deep_flat_t<table>> );
