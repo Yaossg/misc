@@ -58,7 +58,7 @@ template<typename Iter, typename CharT>
 void raw(Iter last, std::uintmax_t in, int base, CharT zero, CharT A)
 {
 	if(in == 0)
-		*--last = CharT('0');
+		*--last = zero;
 	else for(size_t bit; in > 0; in /= base) bit = in % base,
 		*--last = CharT(bit + (bit < 10 ? zero : A - 10));
 }
