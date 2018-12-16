@@ -90,7 +90,7 @@ void quick_sort(ForwardIt first, ForwardIt last, Compare comp)
 template<typename ForwardIt>
 void merge_sort(ForwardIt first, ForwardIt last)
 {
-	if (std::distance(first, last) > 1) {
+	if(std::distance(first, last) > 1) {
 		ForwardIt middle = next(first, std::distance(first, last) / 2);
 		merge_sort(first, middle);
 		merge_sort(middle, last);
@@ -100,24 +100,10 @@ void merge_sort(ForwardIt first, ForwardIt last)
 template<typename ForwardIt, typename Compare>
 void merge_sort(ForwardIt first, ForwardIt last, Compare comp)
 {
-	if (std::distance(first, last) > 1) {
+	if(std::distance(first, last) > 1) {
 		ForwardIt middle = next(first, std::distance(first, last) / 2);
 		merge_sort(first, middle, comp);
 		merge_sort(middle, last, comp);
 		std::inplace_merge(first, middle, last, comp);
 	}
-}
-
-int main()
-{
-    std::vector<int> v = {0,6,5,4,6,5,4,3,2,16,5,4};
- 
-    std::cout << "before: ";
-    for(auto e : v) std::cout<<e<<" ";
- 
-    bubble_sort(v.begin(), v.end(), std::less<>{});
-    std::cout << "\nafter: ";
-    for(auto e : v) std::cout<<e<<" ";
-    std::cout << '\n';
-    return 0; 
 }
