@@ -22,6 +22,7 @@ public:
 		init_primes = {2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47};
 	
 	bool is_prime(uintmax_t n) {
+		if(n < 2) return false;
 		for(uintmax_t i = 0; primes[i] * primes[i] <= n; ++i) 
 			if(n % primes[i] == 0) 
 				return false;
