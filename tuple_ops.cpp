@@ -139,7 +139,7 @@ struct empty<std::tuple<>>
   : std::true_type {};
 
 template<typename Tuple> 
-constexpr size_t empty_v = empty<Tuple>::value;
+constexpr bool empty_v = empty<Tuple>::value;
 
 template<typename Tuple>
 struct front {};
@@ -210,7 +210,36 @@ using head = front_t<Tuple>;
 template<typename Tuple>
 using tail = pop_front_t<Tuple>;
 
-template<typename Type>
+template<size_t Index, typename Type, size_t Pos, typename... Types>
+struct insert_impl {};
+
+template<size_t Index, typename Type, size_t Pos, typename Head, typename... Tail>
+struct insert_impl<Index, Type, Pos, Head, Tail...>
+  : lazy_conditional<Pos != Index,
+  push_front<Head, typename insert_impl<Index, Type, Pos + 1, Tail...>::type>,
+  push_front<Type, push_front_t<Head, typename insert_impl<Index, Type, Pos + 1, Tail...>::type>>> {};
+
+template<size_t Index, typename Type, size_t Pos>
+struct insert_impl<Index, Type, Pos>
+  : std::conditional<Pos != Index, std::tuple<>, std::tuple<Type>> {};
+
+template<size_t Index, typename Type, typename Tuple>
+struct insert {};
+
+template<size_t Index, typename Type, typename... Types>
+struct insert<Index, Type, std::tuple<Types...>> 
+  : insert_impl<Index, Type, 0, Types...> {};
+
+template<size_t Index, typename Type, typename Tuple>
+using insert_t = typename insert<Index, Type, Tuple>::type;
+
+template<size_t Index, typename Tuple>
+struct remove {};
+
+template<typename Type, typename Tuple>
+struct remove_all {};
+
+template<typename Tuple>
 struct to_tuple {};
 
 template<typename... Types>
@@ -464,27 +493,6 @@ struct deep_flat<std::tuple<>>
   
 template<typename Tuple>
 using deep_flat_t = typename deep_flat<Tuple>::type;
-
-using T = std::tuple<int,wchar_t,double,wchar_t,int,
-	float,wchar_t,char,int,char,wchar_t,int,wchar_t,
-	double,wchar_t,int,float,wchar_t,char,int,char,wchar_t>;
-static_assert( std::is_same<unique_t<T>, std::tuple<int, wchar_t, double, float, char>>::value); 
-
-using T2 = std::tuple<int, unsigned long, float>;
-using T20 = std::tuple<int*, unsigned long*, float>;
-static_assert( std::is_same<typename process_if<std::is_integral, std::add_pointer, T2>::type, T20>::value );
-
-using T3 = std::tuple<double, unsigned long, float>;
-using T4 = std::tuple<double*, unsigned long*, float*>;
-static_assert( std::is_same<transform_t<std::add_pointer, T3>, T4>::value );
-
-using table = std::tuple<std::tuple<int, std::tuple<int>>, int, std::tuple<>, int, std::tuple<int>, std::tuple<>>;
-static_assert( all_of_v<int, deep_flat_t<table>> );
-
-using Ttyper = int; 
-using Tint = repeat_t<3, box, Ttyper>;
-using Tint2 = repeat_t<3, unbox, Tint>;
-static_assert( std::is_same<Tint2, int>::value);
 
 }
 
