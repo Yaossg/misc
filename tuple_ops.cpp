@@ -204,6 +204,9 @@ struct pop_back<std::tuple<Head>>
 template<typename Tuple>
 using pop_back_t = typename pop_back<Tuple>::type;
 
+// following two templates are provided, however, never used in the library,
+// because I prefer specialization to these.
+
 template<typename Tuple>
 using head = front_t<Tuple>;
 
@@ -233,11 +236,51 @@ struct insert<Index, Type, std::tuple<Types...>>
 template<size_t Index, typename Type, typename Tuple>
 using insert_t = typename insert<Index, Type, Tuple>::type;
 
+template<size_t Index, size_t Pos, typename... Types>
+struct remove_impl {};
+
+template<size_t Index, size_t Pos, typename Head, typename... Tail>
+struct remove_impl<Index, Pos, Head, Tail...> 
+  : lazy_conditional<Pos != Index, 
+  push_front<Head, typename remove_impl<Index, Pos + 1, Tail...>::type>,
+  remove_impl<Index, Pos + 1, Tail...>> {};
+
+template<size_t Index, size_t Pos>
+struct remove_impl<Index, Pos> : typer<std::tuple<>> {};
+
 template<size_t Index, typename Tuple>
 struct remove {};
 
+template<size_t Index, typename... Types>
+struct remove<Index, std::tuple<Types...>> 
+  : remove_impl<Index, 0, Types...> {};
+  
+template<size_t Index, typename Tuple>
+using remove_t = typename remove<Index, Tuple>::type;
+
+template<typename Type, typename... Types>
+struct remove_all_impl {};
+
+template<typename Type, typename... Tail>
+struct remove_all_impl<Type, Type, Tail...>
+  : remove_all_impl<Type, Tail...> {};
+
+template<typename Type, typename Head, typename... Tail>
+struct remove_all_impl<Type, Head, Tail...>
+  : push_front<Head, typename remove_all_impl<Type, Tail...>::type> {};
+
+template<typename Type>
+struct remove_all_impl<Type> : typer<std::tuple<>> {};
+
 template<typename Type, typename Tuple>
 struct remove_all {};
+
+template<typename Type, typename... Types>
+struct remove_all<Type, std::tuple<Types...>> 
+  : remove_all_impl<Type, Types...> {};
+
+template<typename Type, typename Tuple>
+using remove_all_t = typename remove_all<Type, Tuple>::type;
 
 template<typename Tuple>
 struct to_tuple {};
