@@ -5,9 +5,9 @@ void bubble_sort(ForwardIt first, ForwardIt last)
 {
 	for(ForwardIt it = first; it != last; ++it) { 
 		bool sorted = true;
-		for(ForwardIt it2 = first; next(it2) != last; ++it2)
-			if(*next(it2) < *it2) {
-				std::iter_swap(it2, next(it2));
+		for(ForwardIt it2 = first; std::next(it2) != last; ++it2)
+			if(*std::next(it2) < *it2) {
+				std::iter_swap(it2, std::next(it2));
 				sorted = false;
 			}
 		if(sorted) break;
@@ -18,9 +18,9 @@ void bubble_sort(ForwardIt first, ForwardIt last, Compare comp)
 {
 	for(ForwardIt it = first; it != last; ++it) { 
 		bool sorted = true;
-		for(ForwardIt it2 = first; next(it2) != last; ++it2)
-			if(comp(*next(it2), *it2)) {
-				std::iter_swap(it2, next(it2));
+		for(ForwardIt it2 = first; std::next(it2) != last; ++it2)
+			if(comp(*std::next(it2), *it2)) {
+				std::iter_swap(it2, std::next(it2));
 				sorted = false;
 			}
 		if(sorted) break;
@@ -96,7 +96,7 @@ template<typename ForwardIt>
 void merge_sort(ForwardIt first, ForwardIt last)
 {
 	if(std::distance(first, last) > 1) {
-		ForwardIt middle = next(first, std::distance(first, last) / 2);
+		ForwardIt middle = std::next(first, std::distance(first, last) / 2);
 		merge_sort(first, middle);
 		merge_sort(middle, last);
 		std::inplace_merge(first, middle, last);
@@ -106,7 +106,7 @@ template<typename ForwardIt, typename Compare>
 void merge_sort(ForwardIt first, ForwardIt last, Compare comp)
 {
 	if(std::distance(first, last) > 1) {
-		ForwardIt middle = next(first, std::distance(first, last) / 2);
+		ForwardIt middle = std::next(first, std::distance(first, last) / 2);
 		merge_sort(first, middle, comp);
 		merge_sort(middle, last, comp);
 		std::inplace_merge(first, middle, last, comp);
