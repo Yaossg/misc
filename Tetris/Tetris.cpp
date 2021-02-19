@@ -7,6 +7,7 @@ BlockInfo Cur, Nxt;
 system_clock::time_point start_time;
 ButtonManager mainMng, scoreMng;
 bool gamezone[MHEIGHT][MWIDTH] = { false };
+wstring ext = TEXT(".png");
 
 const Blocks Ts[7] = {
 	{ 0x0F00, 0x4444, 0x0F00, 0x4444, red },	//I字形
@@ -230,13 +231,13 @@ int execute()
 	switch (getKey())
 	{
 	case UP:
-		moveBlock(BlockInfo::upRotate);
+		moveBlock(&BlockInfo::upRotate);
 		break;
 	case LEFT:
-		moveBlock(BlockInfo::leftMove);
+		moveBlock(&BlockInfo::leftMove);
 		break;
 	case RIGHT:
-		moveBlock(BlockInfo::rightMove);
+		moveBlock(&BlockInfo::rightMove);
 		break;
 	case DOWN:
 		if (!fallDown())
@@ -260,11 +261,11 @@ int execute()
 		time_t t = time(nullptr);
 		tm *tp = localtime(&t);
 		saveimage(static_cast<wstringstream&>(wstringstream()
-			<< "screenshot" << 1900 + tp->tm_year
+			<< TEXT("screenshot") << 1900 + tp->tm_year
 			<< setw(2) << 1 + tp->tm_mon
 			<< tp->tm_mday << tp->tm_hour
 			<< tp->tm_min << tp->tm_sec
-			<< ".bmp").str().c_str());
+			<< ext).str().c_str());
 		MessageBox(GetHWnd(), TEXT("截图已保存"), TEXT("截图"), MB_OK);
 	}break;
 	}
@@ -290,6 +291,8 @@ void initButtons()
 
 void Tetris()
 {
+	initButtons();
+	initgraph(CELL * 16, CELL * 20, EW_NOCLOSE);
 	while (true)
 	{
 		buildgraph(16, 20);
@@ -348,7 +351,7 @@ void oldGame()
 	start_time = system_clock::now();
 	loadGame();
 	fs::remove(score.name + TEXT("save"));
-	fs::remove(score.name + TEXT("save.bmp"));
+	fs::remove(score.name + TEXT("save") + ext);
 	int ret;
 	while ((ret = execute()) == DEF);
 	if (ret == LOST && gameLost() == IDYES)
@@ -433,10 +436,10 @@ void saveGame()
 {
 	if(score.name == TEXT(""))askName(TEXT("保存游戏"));
 	fs::remove(score.name + TEXT("save"));
-	fs::remove(score.name + TEXT("save.bmp"));
+	fs::remove(score.name + TEXT("save" + ext));
 	IMAGE img;
 	getimage(&img, 0, 0, CELL * 30, CELL * 24);
-	wofstream file(score.name + TEXT("save"));
+	wofstream file(score.name + TEXT("save"), ios::binary);
 	file << hex;
 	for (int i = 0; i < MHEIGHT; i++)
 	{
@@ -451,20 +454,20 @@ void saveGame()
 	file << Cur.s << ' ' << Cur.t << ' ' << Cur.x << ' ' << Cur.y << ' '
 		<< Nxt.s << ' ' << Nxt.t << ' '
 		<< score.difficulty << ' ' << score.score << ' ' << score.name;
-	saveimage((score.name + TEXT("save.bmp")).c_str(), &img);
+	saveimage((score.name + TEXT("save") + ext).c_str(), &img);
 }
 
 void loadGame()
 {
-	wifstream file(score.name + TEXT("save"));
+	wifstream file(score.name + TEXT("save"), ios::binary);
 	buildgraph(30, 24);
 	setorigin(8 * CELL, CELL);
+	loadimage(NULL, (score.name + TEXT("save") + ext).c_str());
 	//主界面
 	rectangle(-1, -1, CELL * MWIDTH, CELL * MHEIGHT);
 	//预览区
 	rectangle(CELL * (MWIDTH + 1) - 1, -1,
 		CELL * (MWIDTH + AWIDTH + 1), CELL * AHEIGHT);
-	loadimage(NULL, (score.name + TEXT("save.bmp")).c_str());
 	file >> hex;
 	for (int i = 0; i < MHEIGHT; i++)
 	{
@@ -497,5 +500,5 @@ void askName(wstring title)
 		if (score.name.length() > 10)
 			MessageBox(GetHWnd(), TEXT("您输入的昵称过长，请重新输入"),
 				TEXT("昵称过长"), MB_OK);
-	} while (score.name.length() > 10);
+	} while (score.name.length() > 10 || score.name.empty());
 }

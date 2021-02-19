@@ -1,33 +1,27 @@
 //头文件包含
 //non-standard libaray
-#include <graphics.h>
+#include <easyx.h>
 #include <conio.h>
 #include <windows.h>
 //standard libaray
 #include <cstdlib>
-#include <algorithm>
-#include <functional>
 #include <ctime>
 #include <string>
 #include <sstream>
-#include <iostream>
 #include <iomanip>
 #include <fstream>
 #include <random>
 #include <vector>
 #include <chrono>
-#include <bitset>
 #include <filesystem>
 using namespace std;
 using namespace std::chrono;
-namespace fs = std::experimental::filesystem::v1;
+namespace fs = std::filesystem;
 
 const wchar_t info[] = //这段文字不可以用VS2015 wcout输出
 LR"raw_string(Tetris俄罗斯方块
-作者:Yaossg，需要源代码、意见反馈或发现请联系作者
-基本的技术性信息：
-采用C++11 *with FS TS*（后者非必须）编写
-使用EasyX库，涉及到MFC，始终为单线程)raw_string";
+作者：Yaossg，需要源代码、意见反馈或发现请联系作者
+采用 C++17 编写使用 EasyX 库，涉及到 MFC，始终为单线程)raw_string";
 
 //宏定义部分
 #define CELL 20
@@ -140,12 +134,11 @@ struct ScoreInfo
 				count += (difficulty * i + 1) / 2;
 			score += count;
 			system_clock::time_point stop_time = system_clock::now();
-			unsigned long long dur_time =
-				duration_cast<seconds>(stop_time - start_time).count();
+			int64_t dur_time = duration_cast<seconds>(stop_time - start_time).count();
 			big_count += count * count;
 			if ( difficulty <= max_difficulty
 				&&(dur_time + big_count + score + lineCleared
-				> (difficulty + 1) * (difficulty + 2) * (difficulty + 3)))
+				> int64_t(difficulty + 1) * (difficulty + 2) * (difficulty + 3)))
 			{
 				++difficulty;
 				big_count /= difficulty + 1;
@@ -168,9 +161,8 @@ struct BatchDrawer
 	}
 };
 
-class Button
+struct Button
 {
-public:
 	void draw()const
 	{
 		setfillcolor(color);
@@ -188,13 +180,12 @@ public:
 	int left, top, right, bottom;
 	COLORREF color;
 	wstring text;
-	function<void()> func;
+	void (*func)();
 	bool repaint;
 };
 
-class ButtonManager
+struct ButtonManager
 {
-public:
 	template<typename... Args>
 	void emplace(Args&&... args)
 	{
