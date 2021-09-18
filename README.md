@@ -2,19 +2,15 @@
 
 我的一些杂碎的C++代码
 
-## [DAL3](./DAL3/)
+## [DAL4](./DAL4/)
 
-data analysis library 3
+data analysis library 4
 
 一个数学课上的突发奇想
 
 ## [Integers](./Integers/)
 
 整数的一些操作
-
-### TODO:
-
-- [ ] 加点新的？也许？
 
 ## [Tetris](./Tetris/)
 
@@ -62,8 +58,6 @@ C++11的invoke实现
 
 测试痕迹
 
-是的，我爱直译！
-
 ## [timezone]()
 
 获取系统时区，采取比较通用的方法
@@ -71,8 +65,3 @@ C++11的invoke实现
 ## [tuple_ops]()
 
 元编程的杰作！对tuple的一系列操作
-
-### TODO:
-
-- [x] process process_if
-- [ ] 一些别的操作

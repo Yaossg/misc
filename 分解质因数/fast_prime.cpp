@@ -4,6 +4,7 @@
 #include <map>
 #include <cstdint>
 #include <sstream>
+#include <cmath>
 
 class PrimeEngine {
 	std::vector<uintmax_t> primes = init_primes;
@@ -31,7 +32,9 @@ public:
 	
 	void compute(uintmax_t limit) {
 		if(limit <= primes.back()) return;
-		primes.resize(std::max(limit / 6.8, 400.0));
+		double ln = std::log(limit);
+		int estimate = limit / (ln - 1.1);
+		primes.resize(std::max(estimate, primes.size()));
 		while(compute(limit, -1));
 		primes.resize(tail);
 	}
@@ -51,7 +54,7 @@ public:
 				++ret[each];
 				value /= each;
 			}
-			if(value == 0) break;
+			if(value == 1) break;
 		}
 		return ret;
 	}
@@ -60,7 +63,9 @@ public:
 		out << value << " = ";
 		bool first = true;
 		for(auto each : split(value)) {
-			out << (first ? (first = false), +"": +" * ") << each.first;
+			if (first) first = false;
+			else out << " * ";
+			out << each.first;
 			if(each.second != 1) 
 				out << "^" << each.second;
 		}
@@ -74,6 +79,7 @@ public:
 	}
 	
 };
+
 int main() {
 	PrimeEngine engine;
 	uintmax_t n = 1111177;
