@@ -20,23 +20,17 @@ Int gcd(Int x, Int y) {
 }
 
 template<typename Int>
-class Item {
+class Monomial {
 	std::map<std::string, Int> core;
-	Int max() const {
-		Int m = 0;
-		for (auto const& [a, n] : core)
-			m = std::max(m, n);
-		return m;
-	}
 public:
-	Item(): core{} {}
-	Item(std::map<std::string, Int> core): core{core} {}
-	friend bool operator <(Item const& a, Item const& b) {
-		if (auto cmp = a.max() - b.max()) return cmp > 0;
+	Monomial(): core{} {}
+	Monomial(std::map<std::string, Int> core): core{core} {}
+	friend bool operator <(Monomial const& a, Monomial const& b) {
+		if (auto cmp = a.degree() - b.degree()) return cmp > 0;
 		return a.core < b.core;	
 	}
-	friend Item operator *(Item const& a, Item const& b) {
-		Item r = a;
+	friend Monomial operator *(Monomial const& a, Monomial const& b) {
+		Monomial r = a;
 		for (auto const& [a, n] : b.core)
 			r.core[a] += n;
 		return r;
@@ -62,7 +56,12 @@ public:
 	Int at(std::string name) const {
 		return core.at(name);
 	}
-	
+	Int degree() const {
+		Int m = 0;
+		for (auto const& [a, n] : core)
+			m = std::max(m, n);
+		return m;
+	}
 };
 
 template<typename Int>
@@ -70,15 +69,22 @@ class RatioExpr;
 
 template<typename Int>
 class IntExpr {
-	using item = Item<Int>;
-	using core_t = std::map<item, Int>;
+	friend class RatioExpr<Int>;
+	using mono = Monomial<Int>;
+	using core_t = std::map<mono, Int>;
 	core_t core;
 	IntExpr(core_t core): core{core} {}
+	
+	void div(Int g) {
+		for(auto& [x1, k1] : core) {
+			k1 /= g;
+		}
+	}
 public:
 	IntExpr(): core{{ {}, 0 }} {}
 	IntExpr(Int C): core{{ {}, C }} {}
 	IntExpr(std::string a, Int n = 1): core{{ { {{a, n}} }, 1 }} {}
-	IntExpr(item item, Int C): core{{ item, C }} {}
+	IntExpr(mono mono, Int C): core{{ mono, C }} {}
 	
 	IntExpr operator+() const {
 		return *this;
@@ -169,7 +175,7 @@ public:
 		}
 		IntExpr ans{ret};
 		for (auto [x0, k] : buf) {
-			item x = x0;
+			mono x = x0;
 			Int n = x.at(name);
 			x.erase(name);
 			ans += IntExpr(x, k) * pow(expr, n);
@@ -190,7 +196,7 @@ public:
 		}
 		RatioExpr<Int> ans{IntExpr<Int>{ret}, 1};
 		for (auto [x0, k] : buf) {
-			item x = x0;
+			mono x = x0;
 			Int n = x.at(name);
 			x.erase(name);
 			ans += IntExpr(x, k) * pow(expr, n);
@@ -201,15 +207,9 @@ public:
 	Int gcd() const {
 		Int ret = 0;
 		for(auto const& [x1, k1] : core) {
-			ret = ::yao_math::gcd(k1, ret);
+			ret = gcd(k1, ret);
 		}
 		return ret;
-	}
-
-	void div(Int g) {
-		for(auto& [x1, k1] : core) {
-			k1 /= g;
-		}
 	}
 };
 
@@ -228,10 +228,10 @@ class RatioExpr {
 		num.div(g); den.div(g);
 	}
 public:
-	RatioExpr(IntExpr<Int> num, IntExpr<Int> den = 1)
-		: num{num}, den{den} { normalize(); }
 	RatioExpr(): num{0}, den{1} {}
 	RatioExpr(Int C): num{C}, den{1} {}
+	RatioExpr(IntExpr<Int> num, IntExpr<Int> den = 1)
+		: num{num}, den{den} { normalize(); }
 	
 	RatioExpr operator+() const {
 		return *this;
