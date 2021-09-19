@@ -282,6 +282,28 @@ struct remove_all<Type, std::tuple<Types...>>
 template<typename Type, typename Tuple>
 using remove_all_t = typename remove_all<Type, Tuple>::type;
 
+template<template<typename Type> class Pred, typename... Types>
+struct remove_if_impl {};
+
+template<template<typename Type> class Pred, typename Head, typename... Tail>
+struct remove_if_impl<Pred, Head, Tail...>
+  : lazy_conditional<Pred<Head>::value, 
+      remove_if_impl<Pred, Tail...>
+      push_front<Head, typename remove_if_impl<Pred, Tail...>::type>> {};
+
+template<template<typename Type> class Pred>
+struct remove_if_impl<Pred> : typer<std::tuple<>> {};
+
+template<template<typename Type> class Pred, typename Tuple>
+struct remove_if {};
+
+template<template<typename Type> class Pred, typename... Types>
+struct remove_if<Pred, std::tuple<Types...>> 
+  : remove_if_impl<Pred, Types...> {};
+
+template<template<typename Type> class Pred, typename Tuple>
+using remove_if_t = typename remove_all<Pred, Tuple>::type;
+
 template<typename Tuple>
 struct to_tuple {};
 

@@ -16,9 +16,9 @@ data analysis library 4
 
 俄罗斯方块，基于[easyX](https://www.easyx.cn/)，前期工作感谢我的第一个C语言老师
 
-## [分解质因数](./分解质因数/)
+## [fast_prime](./fast_prime.cpp)
 
-其实是一个筛法素数引擎，附带了分解质因数的功能
+一个筛法素数引擎，附带了分解质因数的功能
 
 ## [计算器](./计算器/)
 

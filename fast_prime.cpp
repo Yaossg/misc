@@ -9,14 +9,24 @@
 class PrimeEngine {
 	std::vector<uintmax_t> primes = init_primes;
 	uintmax_t current = 50;
+	std::size_t count = 0;
+	/* count	current
+	 * n		50^(2^n)
+	 */
 	std::size_t tail = primes.size();
-	bool compute(uintmax_t limit, std::size_t tail_limit) {
-		for(uintmax_t i = current; i <= current * current; ++i) {
-			if(i >= limit || tail > tail_limit) return false;
+	bool compute(uintmax_t below, std::size_t capcity) {
+		// here we assume a uintmax_t has 64 bits
+		uintmax_t limit = count == 3 ? UINTMAX_MAX : current * current;
+		for(uintmax_t i = current; i <= limit; ++i) {
+			if(i >= below || tail > capcity) return false;
 			if(is_prime(i))
 				primes[tail++] = i;
 		}
-		return current *= current;
+		if (count < 3) {
+			++count;
+			current *= current;
+		}
+		return true;
 	}
 public:
 	constexpr static std::initializer_list<uintmax_t> 
@@ -24,25 +34,26 @@ public:
 	
 	bool is_prime(uintmax_t n) {
 		if(n < 2) return false;
-		for(uintmax_t i = 0; primes[i] * primes[i] <= n; ++i) 
+		if(n & 1 == 0) return false; // shortcut for even numbers
+		for(uintmax_t i = 1 /*skipping 2*/ ; primes[i] * primes[i] <= n; ++i) 
 			if(n % primes[i] == 0) 
 				return false;
 		return true;
 	}
 	
-	void compute(uintmax_t limit) {
-		if(limit <= primes.back()) return;
-		double ln = std::log(limit);
-		int estimate = limit / (ln - 1.1);
+	void computeBelow(uintmax_t below) {
+		if(below <= primes.back()) return;
+		double ln = std::log(below);
+		int estimate = below / (ln - 1.1);
 		primes.resize(std::max(estimate, primes.size()));
-		while(compute(limit, -1));
+		while(compute(below, -1));
 		primes.resize(tail);
 	}
 	
-	void computeN(size_t tail_limit) {
-		if(tail_limit <= primes.size()) return;
-		primes.resize(std::max(tail_limit, primes.size()));
-		while(compute(-1, tail_limit));
+	void computeCapcity(size_t capcity) {
+		if(capcity <= primes.size()) return;
+		primes.resize(std::max(capcity, primes.size()));
+		while(compute(-1, capcity));
 	}
 	
 	std::map<uintmax_t, size_t> split(uintmax_t value) {
