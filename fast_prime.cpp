@@ -9,12 +9,12 @@
 class PrimeEngine {
 	std::vector<uintmax_t> primes = init_primes;
 	uintmax_t current = 50;
-	std::size_t count = 0;
+	size_t count = 0;
 	/* count	current
 	 * n		50^(2^n)
 	 */
-	std::size_t tail = primes.size();
-	bool compute(uintmax_t below, std::size_t capcity) {
+	size_t tail = primes.size();
+	bool compute(uintmax_t below, size_t capcity) {
 		// here we assume a uintmax_t has 64 bits
 		uintmax_t limit = count == 3 ? UINTMAX_MAX : current * current;
 		for(uintmax_t i = current; i <= limit; ++i) {
@@ -44,7 +44,7 @@ public:
 	void computeBelow(uintmax_t below) {
 		if(below <= primes.back()) return;
 		double ln = std::log(below);
-		int estimate = below / (ln - 1.1);
+		size_t estimate = below / (ln - 1.1);
 		primes.resize(std::max(estimate, primes.size()));
 		while(compute(below, -1));
 		primes.resize(tail);
@@ -94,7 +94,7 @@ public:
 int main() {
 	PrimeEngine engine;
 	uintmax_t n = 1111177;
-	engine.compute(n);
+	engine.computeBelow(n);
 	std::cout << std::boolalpha << engine.is_prime(n) << std::endl;
 	std::cout << engine.get_split(n) << std::endl;
 }

@@ -17,12 +17,12 @@ trace& operator=(trace &&){move_n++;return *this;}
 static void test()
 {
 	using namespace std;
-	cout<<"¹¹Ôì¶ÔÏó£º"<<cons_n<<endl;
-	cout<<"¿½±´¶ÔÏó£º"<<copy_n<<endl;
-	cout<<"ÒÆ¶¯¶ÔÏó£º"<<move_n<<endl;
-	cout<<"Ïú»Ù¶ÔÏó£º"<<dest_n<<endl;
+	cout<<"æž„é€ å¯¹è±¡ï¼š"<<cons_n<<endl;
+	cout<<"æ‹·è´å¯¹è±¡ï¼š"<<copy_n<<endl;
+	cout<<"ç§»åŠ¨å¯¹è±¡ï¼š"<<move_n<<endl;
+	cout<<"é”€æ¯å¯¹è±¡ï¼š"<<dest_n<<endl;
 	if(cons_n + copy_n + move_n != dest_n)
-		cout<<"ÓÐ~T()Ã»ÓÐ±»µ÷ÓÃ!"<<endl;
+		cout<<"æœ‰~T()æ²¡æœ‰è¢«è°ƒç”¨!"<<endl;
 }
 };
 int trace::cons_n = 0;

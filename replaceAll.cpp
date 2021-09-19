@@ -2,9 +2,9 @@
 #include <stdexcept>
 /**	
 *	replaceAll(str, src, dst, pos = 0, n = npos) -> ret
-*	½«×Ö·û´®strÄÚsrcÈ«²¿Ìæ»»³Édst²¢·µ»Ø 
-*	src, dst, retµÄÀàĞÍÓÉstr¾ö¶¨ 
-*	posÎªÌæ»»µÄÆğÊ¼Î»ÖÃ pos + nÎªÖÕÖ¹Î»ÖÃ 
+*	å°†å­—ç¬¦ä¸²strå†…srcå…¨éƒ¨æ›¿æ¢æˆdstå¹¶è¿”å› 
+*	src, dst, retçš„ç±»å‹ç”±strå†³å®š 
+*	posä¸ºæ›¿æ¢çš„èµ·å§‹ä½ç½® pos + nä¸ºç»ˆæ­¢ä½ç½® 
 */	
 template<typename CharType, typename CharTraits, typename Allocator> 
 inline std::basic_string<CharType, CharTraits, Allocator> 
