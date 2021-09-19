@@ -26,29 +26,29 @@ template<typename CharT,
 struct Texts {
 	using view = std::basic_string_view<CharT, Traits>;
 	Characters<CharT> chars;
-	view base_name = {}; //½øÖÆÇ°×º 
-	view separator = {}; //·Ö¸î×Ö·û 
+	view base_name = {}; //è¿›åˆ¶å‰ç¼€ 
+	view separator = {}; //åˆ†å‰²å­—ç¬¦ 
 };
 
 struct Options { bool 
-	positive_sign : 1, //ÊÇ·ñÏÔÊ¾ÕıºÅ'+' 
-	zero_has_sign : 1, //µ±value == 0Ê±£¬0ÊÇ·ñÓĞ·ûºÅ(·ûºÅÈ¡¾öÓÚpositive_sign)
-	number_upper_case : 1, //Êı×Ö(A-Z)ÊÇ·ñ´óĞ´ 
-	sign_before_base : 1, //·ûºÅÊÇ·ñ·ÅÔÚ½øÖÆÇ°Ãæ
-	sign_take_up_zero : 1, //·ûºÅÊÇ·ñËã×÷²¹Î»0µÄÒ»²¿·Ö 
-	base_take_up_zero : 1, //½øÖÆÊÇ·ñËã×÷²¹Î»0µÄÒ»²¿·Ö 
-	left_aligned : 1; //ÊÇ·ñ×ó¶ÔÆë 
+	positive_sign : 1, //æ˜¯å¦æ˜¾ç¤ºæ­£å·'+' 
+	zero_has_sign : 1, //å½“value == 0æ—¶ï¼Œ0æ˜¯å¦æœ‰ç¬¦å·(ç¬¦å·å–å†³äºpositive_sign)
+	number_upper_case : 1, //æ•°å­—(A-Z)æ˜¯å¦å¤§å†™ 
+	sign_before_base : 1, //ç¬¦å·æ˜¯å¦æ”¾åœ¨è¿›åˆ¶å‰é¢
+	sign_take_up_zero : 1, //ç¬¦å·æ˜¯å¦ç®—ä½œè¡¥ä½0çš„ä¸€éƒ¨åˆ† 
+	base_take_up_zero : 1, //è¿›åˆ¶æ˜¯å¦ç®—ä½œè¡¥ä½0çš„ä¸€éƒ¨åˆ† 
+	left_aligned : 1; //æ˜¯å¦å·¦å¯¹é½ 
 };
 
 template<typename CharT, 
 	typename Traits = std::char_traits<CharT>>
 struct Arguments {
-	Texts<CharT, Traits> texts = {}; //ËùĞèÎÄ±¾ 
-	Options options = {}; //ËùĞèÑ¡Ïî 
-	int base = 10; //½øÖÆ 
-	std::size_t zerowidth = 0; //²¹Î»0µÄ¿í¶È 
-	std::size_t spacewidth = 0; //¿Õ¸ñ²¹Î»¿í¶È 
-	std::size_t grouping = 0; //·Ö¸î¿í¶È 
+	Texts<CharT, Traits> texts = {}; //æ‰€éœ€æ–‡æœ¬ 
+	Options options = {}; //æ‰€éœ€é€‰é¡¹ 
+	int base = 10; //è¿›åˆ¶ 
+	std::size_t zerowidth = 0; //è¡¥ä½0çš„å®½åº¦ 
+	std::size_t spacewidth = 0; //ç©ºæ ¼è¡¥ä½å®½åº¦ 
+	std::size_t grouping = 0; //åˆ†å‰²å®½åº¦ 
 	CharT getA() {
 		return options.number_upper_case ? texts.chars.A : texts.chars.a;
 	}
