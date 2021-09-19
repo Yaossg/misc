@@ -117,7 +117,7 @@ struct find_if_impl {};
 template<size_t Index, template<typename Type> class Pred, typename Head, typename... Tail>
 struct find_if_impl<Index, Pred, tuple<Head, Tail...>>
   : lazy_conditional<Pred<Head>::value, sizer<Index>, 
-	  find_if_impl<Index + 1, Pred, tuple<Tail...>>> {};
+	    find_if_impl<Index + 1, Pred, tuple<Tail...>>> {};
 
 template<size_t Index, template<typename Type> class Pred>
 struct find_if_impl<Index, Pred, tuple<>>
@@ -207,9 +207,6 @@ struct pop_back<tuple<Head>>
 template<typename Tuple>
 using pop_back_t = typename pop_back<Tuple>::type;
 
-// following two templates are provided, however, never used in the library,
-// because I prefer specialization to these.
-
 template<typename Tuple>
 using head = front_t<Tuple>;
 
@@ -222,8 +219,8 @@ struct insert_impl {};
 template<size_t Index, typename Type, size_t Pos, typename Head, typename... Tail>
 struct insert_impl<Index, Type, Pos, Head, Tail...>
   : lazy_conditional<Pos != Index,
-  push_front<Head, typename insert_impl<Index, Type, Pos + 1, Tail...>::type>,
-  push_front<Type, push_front_t<Head, typename insert_impl<Index, Type, Pos + 1, Tail...>::type>>> {};
+      push_front<Head, typename insert_impl<Index, Type, Pos + 1, Tail...>::type>,
+      push_front<Type, push_front_t<Head, typename insert_impl<Index, Type, Pos + 1, Tail...>::type>>> {};
 
 template<size_t Index, typename Type, size_t Pos>
 struct insert_impl<Index, Type, Pos>
@@ -240,26 +237,26 @@ template<size_t Index, typename Type, typename Tuple>
 using insert_t = typename insert<Index, Type, Tuple>::type;
 
 template<size_t Index, size_t Pos, typename... Types>
-struct remove_impl {};
+struct remove_at_impl {};
 
 template<size_t Index, size_t Pos, typename Head, typename... Tail>
-struct remove_impl<Index, Pos, Head, Tail...> 
+struct remove_at_impl<Index, Pos, Head, Tail...> 
   : lazy_conditional<Pos != Index, 
-  push_front<Head, typename remove_impl<Index, Pos + 1, Tail...>::type>,
-  remove_impl<Index, Pos + 1, Tail...>> {};
+      push_front<Head, typename remove_at_impl<Index, Pos + 1, Tail...>::type>,
+      remove_at_impl<Index, Pos + 1, Tail...>> {};
 
 template<size_t Index, size_t Pos>
-struct remove_impl<Index, Pos> : typer<tuple<>> {};
+struct remove_at_impl<Index, Pos> : typer<tuple<>> {};
 
 template<size_t Index, typename Tuple>
-struct remove {};
+struct remove_at {};
 
 template<size_t Index, typename... Types>
-struct remove<Index, tuple<Types...>> 
-  : remove_impl<Index, 0, Types...> {};
+struct remove_at<Index, tuple<Types...>> 
+  : remove_at_impl<Index, 0, Types...> {};
   
 template<size_t Index, typename Tuple>
-using remove_t = typename remove<Index, Tuple>::type;
+using remove_at_t = typename remove_at<Index, Tuple>::type;
 
 template<typename Type, typename... Types>
 struct remove_all_impl {};
@@ -411,7 +408,7 @@ template<template<typename Type> class Pred, typename Head, typename... Tail>
 struct all_of_if<Pred, tuple<Head, Tail...>>
   : lazy_conditional<Pred<Head>::value, 
   	  all_of_if<Pred, tuple<Tail...>>, 
-	  std::false_type> {};
+	    std::false_type> {};
 
 template<template<typename Type> class Pred> 
 struct all_of_if<Pred, tuple<>> 
