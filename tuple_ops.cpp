@@ -8,6 +8,8 @@ namespace tuple_ops {
 
 using std::size_t;
 using std::tuple;
+using std::tuple_element;
+using std::tuple_size;
 
 template<size_t value>
 using sizer = std::integral_constant<size_t, value>;
@@ -17,6 +19,9 @@ using booler = std::integral_constant<bool, value>;
 
 template<typename Type>
 struct typer { using type = Type; }; 
+
+template<typename... Types>
+struct tupler : typer<tuple<Types...>> {};
 
 template<typename Type>
 struct box : typer<typer<Type>> {};
@@ -37,7 +42,7 @@ template<template<typename Type> class Func, typename Type>
 struct repeat<1, Func, Type> : Func<Type> {};
 
 template<template<typename Type> class Func, typename Type>
-struct repeat<0, Func, Type> : Type {};
+struct repeat<0, Func, Type> : typer<Type> {};
 
 template<size_t Loop, template<typename Type> class Func, typename Type>
 using repeat_t = typename repeat<Loop, Func, Type>::type;
@@ -54,6 +59,21 @@ struct lazy_conditional<true, True, False> : True {};
 
 template<bool Bool, typename True, typename False>
 using lazy_conditional_t = typename lazy_conditional<Bool, True, False>::type;
+
+template<template<typename... Types> class Cast, typename Tuple>
+struct cast {};
+
+template<template<typename... Types> class Cast, typename... Types>
+struct cast<Cast, tuple<Types...>> : typer<Cast<Types...>> {};
+
+template<template<typename... Types> class Cast, typename Tuple>
+using cast_t = typename cast<Cast, Tuple>::type;
+
+template<template<typename First, typename Second> class BiFunc, typename First>
+struct bind1st {
+  template<typename Second>
+  struct bind2nd : BiFunc<First, Second> {};
+};
 
 template<typename Type, typename Tuple> 
 struct count {};
@@ -167,7 +187,7 @@ struct push_front {};
 
 template<typename Head, typename... Tail>
 struct push_front<Head, tuple<Tail...>> 
-  : typer<tuple<Head, Tail...>> {};
+  : tupler<Head, Tail...> {};
 
 template<typename Type, typename Tuple>
 using push_front_t = typename push_front<Type, Tuple>::type;
@@ -177,7 +197,7 @@ struct pop_front {};
 
 template<typename Head, typename... Tail>
 struct pop_front<tuple<Head, Tail...>> 
-  : typer<tuple<Tail...>> {};
+  : tupler<Tail...> {};
 
 template<typename Tuple>
 using pop_front_t = typename pop_front<Tuple>::type;
@@ -187,7 +207,7 @@ struct push_back {};
 
 template<typename Tail, typename... Head>
 struct push_back<Tail, tuple<Head...>> 
-  : typer<tuple<Head..., Tail>> {};
+  : tupler<Head..., Tail> {};
 
 template<typename Type, typename Tuple>
 using push_back_t = typename push_back<Type, Tuple>::type;
@@ -202,16 +222,32 @@ struct pop_back<tuple<Head, Body, Tail...>>
 
 template<typename Head>
 struct pop_back<tuple<Head>> 
-  : typer<tuple<>> {};
+  : tupler<> {};
 
 template<typename Tuple>
 using pop_back_t = typename pop_back<Tuple>::type;
 
 template<typename Tuple>
-using head = front_t<Tuple>;
+using head_t = front_t<Tuple>;
 
 template<typename Tuple>
-using tail = pop_front_t<Tuple>;
+using tail_t = pop_front_t<Tuple>;
+
+template<typename Tuple>
+struct to_tuple {};
+
+template<typename... Types>
+struct to_tuple<tuple<Types...>> : tupler<Types...> {};
+
+template<typename Head, typename Tail>
+struct to_tuple<std::pair<Head, Tail>> : tupler<Head, Tail> {};
+
+template<typename Type, size_t Index>
+struct to_tuple<std::array<Type, Index>> 
+  : repeat<Index, bind1st<push_front, Type>::template bind2nd, tuple<>> {};
+
+template<typename Type>
+using to_tuple_t = typename to_tuple<Type>::type;
 
 template<size_t Index, typename Type, size_t Pos, typename... Types>
 struct insert_impl {};
@@ -246,7 +282,7 @@ struct remove_at_impl<Index, Pos, Head, Tail...>
       remove_at_impl<Index, Pos + 1, Tail...>> {};
 
 template<size_t Index, size_t Pos>
-struct remove_at_impl<Index, Pos> : typer<tuple<>> {};
+struct remove_at_impl<Index, Pos> : tupler<> {};
 
 template<size_t Index, typename Tuple>
 struct remove_at {};
@@ -270,7 +306,7 @@ struct remove_all_impl<Type, Head, Tail...>
   : push_front<Head, typename remove_all_impl<Type, Tail...>::type> {};
 
 template<typename Type>
-struct remove_all_impl<Type> : typer<tuple<>> {};
+struct remove_all_impl<Type> : tupler<> {};
 
 template<typename Type, typename Tuple>
 struct remove_all {};
@@ -292,7 +328,7 @@ struct remove_if_impl<Pred, Head, Tail...>
       push_front<Head, typename remove_if_impl<Pred, Tail...>::type>> {};
 
 template<template<typename Type> class Pred>
-struct remove_if_impl<Pred> : typer<tuple<>> {};
+struct remove_if_impl<Pred> : tupler<> {};
 
 template<template<typename Type> class Pred, typename Tuple>
 struct remove_if {};
@@ -305,27 +341,6 @@ template<template<typename Type> class Pred, typename Tuple>
 using remove_if_t = typename remove_if<Pred, Tuple>::type;
 
 template<typename Tuple>
-struct to_tuple {};
-
-template<typename... Types>
-struct to_tuple<tuple<Types...>> : typer<tuple<Types...>> {};
-
-template<typename Head, typename Tail>
-struct to_tuple<std::pair<Head, Tail>> : typer<tuple<Head, Tail>> {};
-
-template<typename Type, size_t Index>
-struct to_tuple<std::array<Type, Index>> 
-  : typer<push_front_t<Type, 
-      typename to_tuple<std::array<Type, Index - 1>>::type>> {};
-
-template<typename Type>
-struct to_tuple<std::array<Type, 1>> 
-  : typer<tuple<Type>> {};
-
-template<typename Type>
-using to_tuple_t = typename to_tuple<Type>::type;
-
-template<typename Tuple>
 struct reverse {};
 
 template<typename Head, typename... Tail>
@@ -335,7 +350,7 @@ struct reverse<tuple<Head, Tail...>>
 
 template<>
 struct reverse<tuple<>> 
-  : typer<tuple<>> {};
+  : tupler<> {};
 
 template<typename Tuple>
 using reverse_t = typename reverse<Tuple>::type;
@@ -344,7 +359,7 @@ template<typename Tuple, typename Type>
 struct unique_impl {};
 
 template<typename... Types>
-struct unique_impl<tuple<Types...>, tuple<>> : typer<tuple<Types...>> {};
+struct unique_impl<tuple<Types...>, tuple<>> : tupler<Types...> {};
 
 template<typename... Types, typename Head, typename... Tail>
 struct unique_impl<tuple<Types...>, tuple<Head, Tail...>> 
@@ -364,7 +379,7 @@ struct transform {};
 
 template<template<typename Type> class Func, typename... Types>
 struct transform<Func, tuple<Types...>> 
-  : typer<tuple<typename Func<Types>::type...>> {};
+  : tupler<typename Func<Types>::type...> {};
 
 template<template<typename Type> class Func, typename Tuple>
 using transform_t = typename transform<Func, Tuple>::type;
@@ -446,7 +461,7 @@ struct replace<Src, Dst, tuple<Body, Tail...>>
     
 template<typename Src, typename Dst>
 struct replace<Src, Dst, tuple<>> 
-  : typer<tuple<>> {};
+  : tupler<> {};
 
 template<typename Src, typename Dst, typename Tuple>
 using replace_t = typename replace<Src, Dst, Tuple>::type;
@@ -461,7 +476,7 @@ struct replace_if<Pred, Dst, tuple<Body, Tail...>>
 	    
 template<template<typename Type> class Pred, typename Dst>
 struct replace_if<Pred, Dst, tuple<>> 
-  : typer<tuple<>> {};
+  : tupler<> {};
 
 template<template<typename Type> class Pred, typename Dst, typename Tuple>
 using replace_if_t = typename replace_if<Pred, Dst, Tuple>::type;
@@ -481,7 +496,7 @@ struct process<Src, Func, tuple<Body, Tail...>>
     
 template<typename Src, template<typename Type> class Func>
 struct process<Src, Func, tuple<>> 
-  : typer<tuple<>> {};
+  : tupler<> {};
 
 template<typename Src, template<typename Type> class Func, typename Tuple>
 using process_t = typename process<Src, Func, Tuple>::type;
@@ -496,24 +511,36 @@ struct process_if<Pred, Func, tuple<Body, Tail...>>
   
 template<template<typename Type> class Pred, template<typename Type> class Func>
 struct process_if<Pred, Func, tuple<>> 
-  : typer<tuple<>> {};
+  : tupler<> {};
   
 template<template<typename Type> class Pred, template<typename Type> class Func, typename Tuple>
 using process_if_t = typename process_if<Pred, Func, Tuple>::type;
 
 template<typename Head, typename Body, typename... Tail>
-struct connect {};
+struct join {};
 
 template<typename... Head, typename Body, typename... Tail>
-struct connect<tuple<Head...>, Body, Tail...>
-  : connect<tuple<Head...>, typename connect<Body, Tail...>::type> {};
+struct join<tuple<Head...>, Body, Tail...>
+  : join<tuple<Head...>, typename join<Body, Tail...>::type> {};
 
 template<typename... Head, typename... Tail>
-struct connect<tuple<Head...>, tuple<Tail...>>
-  : typer<tuple<Head..., Tail...>> {};
+struct join<tuple<Head...>, tuple<Tail...>>
+  : tupler<Head..., Tail...> {};
 
 template<typename Head, typename Body, typename... Tail>
-using connect_t = typename connect<Head, Body, Tail...>::type;
+using join_t = typename join<Head, Body, Tail...>::type;
+
+template<template<typename First, typename Second> class BiFunc, typename First, typename Second>
+struct combine {};
+
+template<template<typename First, typename Second> class BiFunc, typename... Firsts, typename... Seconds>
+struct combine<BiFunc, tuple<Firsts...>, tuple<Seconds...>> 
+  : tupler<typename BiFunc<Firsts, Seconds>::type...> {
+  static_assert(sizeof...(Firsts) == sizeof...(Seconds));
+};
+
+template<template<typename First, typename Second> class BiFunc, typename First, typename Second>
+using combine_t = typename combine<BiFunc, First, Second>::type;
 
 template<typename Tuple>
 struct flat {};
@@ -524,7 +551,7 @@ struct flat<tuple<Head, Tail...>>
 
 template<typename Head, typename... Body, typename... Tail>
 struct flat<tuple<tuple<Head, Body...>, Tail...>>
-  : connect<tuple<Head, Body...>, typename flat<tuple<Tail...>>::type> {};
+  : join<tuple<Head, Body...>, typename flat<tuple<Tail...>>::type> {};
 
 template<typename... Tail>
 struct flat<tuple<tuple<>, Tail...>>
@@ -532,7 +559,7 @@ struct flat<tuple<tuple<>, Tail...>>
   
 template<>
 struct flat<tuple<>>
-  : typer<tuple<>> {};
+  : tupler<> {};
 
 template<typename Tuple>
 using flat_t = typename flat<Tuple>::type;
@@ -546,7 +573,7 @@ struct deep_flat<tuple<Head, Tail...>>
   
 template<typename Head, typename... Body, typename... Tail>
 struct deep_flat<tuple<tuple<Head, Body...>, Tail...>>
-  : connect<typename deep_flat<tuple<Head, Body...>>::type, typename deep_flat<tuple<Tail...>>::type> {};
+  : join<typename deep_flat<tuple<Head, Body...>>::type, typename deep_flat<tuple<Tail...>>::type> {};
 
 template<typename... Tail>
 struct deep_flat<tuple<tuple<>, Tail...>>
@@ -554,10 +581,12 @@ struct deep_flat<tuple<tuple<>, Tail...>>
   
 template<>
 struct deep_flat<tuple<>>
-  : typer<tuple<>> {};
+  : tupler<> {};
   
 template<typename Tuple>
 using deep_flat_t = typename deep_flat<Tuple>::type;
+
+// TODO fold_left fold_right
 
 }
 
