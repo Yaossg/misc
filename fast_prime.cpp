@@ -33,8 +33,11 @@ public:
 		init_primes = {2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47};
 	
 	bool is_prime(uintmax_t n) {
-		if(n < 2) return false;
-		if(n & 1 == 0) return false; // shortcut for even numbers
+		switch(n) {
+			case 0: case 1: return false;
+			case 2: case 3: case 5: case 7: return true;
+			default: if(n & 1 == 0) return false; // shortcut for even numbers
+		}
 		for(uintmax_t i = 1 /*skipping 2*/ ; primes[i] * primes[i] <= n; ++i) 
 			if(n % primes[i] == 0) 
 				return false;
