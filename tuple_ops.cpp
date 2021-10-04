@@ -60,14 +60,14 @@ struct lazy_conditional<true, True, False> : True {};
 template<bool Bool, typename True, typename False>
 using lazy_conditional_t = typename lazy_conditional<Bool, True, False>::type;
 
-template<template<typename... Types> class Cast, typename Tuple>
-struct cast {};
+template<template<typename... Types> class Rebinder, typename Tuple>
+struct rebind {};
 
-template<template<typename... Types> class Cast, typename... Types>
-struct cast<Cast, tuple<Types...>> : typer<Cast<Types...>> {};
+template<template<typename... Types> class Rebinder, typename... Types>
+struct rebind<Rebinder, tuple<Types...>> : typer<Rebinder<Types...>> {};
 
-template<template<typename... Types> class Cast, typename Tuple>
-using cast_t = typename cast<Cast, Tuple>::type;
+template<template<typename... Types> class Rebinder, typename Tuple>
+using rebind_t = typename rebind<Rebinder, Tuple>::type;
 
 template<template<typename First, typename Second> class BiFunc, typename First>
 struct bind1st {
@@ -586,7 +586,18 @@ struct deep_flat<tuple<>>
 template<typename Tuple>
 using deep_flat_t = typename deep_flat<Tuple>::type;
 
-// TODO fold_left fold_right
+
+template<typename Init, template<typename Left, typename Right> class BiFunc, typename Tuple>
+struct reduce_left;
+
+template<typename Init, template<typename Left, typename Right> class BiFunc, typename Tuple>
+struct reduce_right;
+
+template<template<typename Left, typename Right> class BiFunc, typename Tuple>
+struct fold_left;
+
+template<template<typename Left, typename Right> class BiFunc, typename Tuple>
+struct fold_right;
 
 }
 
