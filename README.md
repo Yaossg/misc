@@ -2,24 +2,6 @@
 
 我的一些杂碎的C++代码
 
-## [DAL4](./DAL4/)
-
-data analysis library 4
-
-一个数学课上的突发奇想
-
-## [Integers](./Integers/)
-
-整数的一些操作
-
-## [Tetris](./Tetris/)
-
-俄罗斯方块，基于[easyX](https://www.easyx.cn/)，前期工作感谢我的第一个C语言老师
-
-## [fast_prime](./fast_prime.cpp)
-
-一个筛法素数引擎，附带了分解质因数的功能
-
 ## [计算器](./计算器/)
 
 去上海旅游时开的坑，几乎肯定是弃坑了，我的第一个长期做changelog的项目
