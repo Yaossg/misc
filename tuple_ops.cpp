@@ -587,16 +587,16 @@ template<typename Tuple>
 using deep_flat_t = typename deep_flat<Tuple>::type;
 
 
-template<typename Init, template<typename Left, typename Right> class BiFunc, typename Tuple>
+template<template<typename Left, typename Right> class BiFunc, typename Tuple>
 struct reduce_left;
 
-template<typename Init, template<typename Left, typename Right> class BiFunc, typename Tuple>
+template<template<typename Left, typename Right> class BiFunc, typename Tuple>
 struct reduce_right;
 
-template<template<typename Left, typename Right> class BiFunc, typename Tuple>
+template<typename Init, template<typename Left, typename Right> class BiFunc, typename Tuple>
 struct fold_left;
 
-template<template<typename Left, typename Right> class BiFunc, typename Tuple>
+template<typename Init, template<typename Left, typename Right> class BiFunc, typename Tuple>
 struct fold_right;
 
 }
